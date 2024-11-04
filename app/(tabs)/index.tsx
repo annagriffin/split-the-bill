@@ -4,8 +4,6 @@ import { Edit } from 'react-native-feather'; // Import the Edit icon
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ScrollView } from 'react-native-gesture-handler';
 
 export default function HomeScreen() {
   // Force light mode
