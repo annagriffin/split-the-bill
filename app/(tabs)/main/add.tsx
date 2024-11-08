@@ -2,13 +2,10 @@ import React from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useRouter } from "expo-router";
 
-export default function ExampleScreen() {
-  const router = useRouter();
-
+export default function AddPeopleScreen() {
   const handlePress = () => {
-    router.push("/main/summary");
+    console.log("Button Pressed!");
   };
 
   return (
@@ -18,7 +15,7 @@ export default function ExampleScreen() {
         onPress={handlePress}
         activeOpacity={0.7}
       >
-        <ThemedText style={styles.buttonText}>Welcome</ThemedText>
+        <ThemedText style={styles.buttonText}>Add</ThemedText>
       </TouchableOpacity>
     </ThemedView>
   );
