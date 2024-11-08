@@ -8,7 +8,7 @@ export default function ExampleScreen() {
   const router = useRouter();
 
   const handlePress = () => {
-    router.push("/main/summary");
+    router.push("/main/SummaryScreen");
   };
 
   return (

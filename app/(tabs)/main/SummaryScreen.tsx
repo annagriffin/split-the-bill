@@ -18,7 +18,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { useState } from "react";
 import { useReceipt } from "@/context/ReceiptContext";
 
-export default function Next() {
+export default function SummaryScreen() {
   const router = useRouter();
 
   const { receiptData, setReceiptData } = useReceipt();
@@ -41,7 +41,7 @@ export default function Next() {
   );
 
   const handleConfirm = () => {
-    router.push("/main/add");
+    router.push("/main/AddPeopleScreen");
   };
 
   const handleSaveEdit = () => {
