@@ -9,6 +9,7 @@ import {
 import { User, UserPlus, XCircle } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useRouter } from "expo-router";
 
 interface Person {
   id: string;
@@ -18,6 +19,7 @@ interface Person {
 
 export default function PeopleComponent() {
   const [people, setPeople] = useState<Person[]>([]);
+  const router = useRouter();
 
   const addPerson = () => {
     const names = ["Sophie", "Megan", "Beth", "Alex", "Jamie", "Sam"];
@@ -32,6 +34,10 @@ export default function PeopleComponent() {
 
   const removePerson = (id: string) => {
     setPeople((prevPeople) => prevPeople.filter((person) => person.id !== id));
+  };
+
+  const handleConfirm = () => {
+    router.push("/main/SplitItemsScreen");
   };
 
   const isDoneButtonEnabled = people.length >= 2;
@@ -60,14 +66,14 @@ export default function PeopleComponent() {
         <ThemedText style={styles.subTitle}>Split bill between:</ThemedText>
 
         {people.length === 0 ? (
-          <TouchableOpacity style={styles.emptyState} onPress={addPerson}>
+          <ThemedView style={styles.emptyState}>
             <ThemedView style={styles.emptyIconContainer}>
               <User width={24} height={24} color="#6b7280" />
             </ThemedView>
             <ThemedText style={styles.emptyText}>
               Add people to split the bill with
             </ThemedText>
-          </TouchableOpacity>
+          </ThemedView>
         ) : (
           <FlatList
             data={people}
@@ -102,6 +108,7 @@ export default function PeopleComponent() {
             !isDoneButtonEnabled && styles.disabledDoneButton,
           ]}
           disabled={!isDoneButtonEnabled}
+          onPress={handleConfirm}
         >
           <ThemedText style={styles.doneButtonText}>
             Done adding people
@@ -208,11 +215,12 @@ const styles = StyleSheet.create({
   },
   doneButtonContainer: {
     backgroundColor: "white",
-    paddingTop: 16, // Space between the list and the button
-    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 16,
+    paddingHorizontal: 0,
   },
   doneButton: {
-    padding: 16,
+    padding: 12,
     backgroundColor: "#04AA6D",
     borderRadius: 8,
     alignItems: "center",
