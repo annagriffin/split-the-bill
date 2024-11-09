@@ -1,22 +1,19 @@
-// app/(tabs)/index.tsx
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   TouchableOpacity,
   FlatList,
   Modal,
   TextInput,
 } from "react-native";
-import { useRouter, router } from "expo-router";
-import { Item, ReceiptData } from "@/types/receiptTypes";
-import { useColorScheme } from "react-native";
-import { Edit } from "react-native-feather"; // Import the Edit icon
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { useRouter } from "expo-router";
+import { Item } from "@/types/receiptTypes";
 import { useState, useRef } from "react";
 import { useReceipt } from "@/context/ReceiptContext";
+import { Edit } from "react-native-feather";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 
 export default function SummaryScreen() {
   const router = useRouter();
@@ -24,18 +21,18 @@ export default function SummaryScreen() {
 
   const { receiptData, setReceiptData } = useReceipt();
 
-  const colorScheme = "light"; // Override to always use light mode
+  type EditableItem = Omit<Item, "price"> & {
+    price: string; // Temporarily handle price as a string for input
+  };
 
-  const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
+  const [itemToEdit, setItemToEdit] = useState<EditableItem | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const openModal = (item) => {
+  const openModal = (item: Item) => {
     setModalVisible(true);
-    setItemToEdit(item);
+    setItemToEdit({ ...item, price: item.price.toFixed(2) });
     setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus(); // Programmatically focus input after opening modal
-      }
+      inputRef.current?.focus();
     }, 100);
   };
 
@@ -63,12 +60,20 @@ export default function SummaryScreen() {
 
   const handleSaveEdit = () => {
     if (itemToEdit) {
+      const parsedPrice = parseFloat(itemToEdit.price);
+      if (isNaN(parsedPrice) || parsedPrice < 0) {
+        alert("Please enter a valid positive number");
+        return;
+      }
+
+      const roundedPrice = parseFloat(parsedPrice.toFixed(2));
+
       const updatedItems: Item[] = receiptData.items.map((item) =>
         item.id === itemToEdit.id
           ? {
               ...item,
               name: itemToEdit.name,
-              price: parseFloat(itemToEdit.price.toFixed(2)),
+              price: roundedPrice,
             }
           : item
       );
@@ -79,6 +84,7 @@ export default function SummaryScreen() {
       });
 
       setItemToEdit(null);
+      setModalVisible(false);
     }
   };
 
@@ -96,24 +102,21 @@ export default function SummaryScreen() {
         <FlatList
           data={receiptData.items}
           keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => {
-            return (
-              <ThemedView style={[styles.itemContainer, styles.topAligned]}>
-                <ThemedText
-                  style={[styles.item, styles.name]}
-                  numberOfLines={2}
-                >
-                  {item.name}
+          renderItem={({ item }) => (
+            <ThemedView style={[styles.itemContainer, styles.topAligned]}>
+              <ThemedText style={[styles.item, styles.name]} numberOfLines={2}>
+                {item.name}
+              </ThemedText>
+              <ThemedView style={styles.flex}>
+                <ThemedText style={styles.item}>
+                  ${item.price.toFixed(2)}
                 </ThemedText>
-                <ThemedView style={styles.flex}>
-                  <ThemedText style={styles.item}>${item.price}</ThemedText>
-                  <TouchableOpacity onPress={() => openModal(item)}>
-                    <Edit width={20} height={20} color="black" />
-                  </TouchableOpacity>
-                </ThemedView>
+                <TouchableOpacity onPress={() => openModal(item)}>
+                  <Edit width={20} height={20} color="black" />
+                </TouchableOpacity>
               </ThemedView>
-            );
-          }}
+            </ThemedView>
+          )}
           contentContainerStyle={{ flexGrow: 1 }}
         />
       </View>
@@ -171,7 +174,7 @@ export default function SummaryScreen() {
         </ThemedView>
       </ThemedView>
 
-      {!!itemToEdit && (
+      {modalVisible && !!itemToEdit && (
         <Modal visible={!!itemToEdit} animationType="slide" transparent={true}>
           <View style={styles.modalBackground}>
             <View style={styles.modalContainer}>
@@ -193,14 +196,14 @@ export default function SummaryScreen() {
                   <Text style={styles.inputLabel}>Price</Text>
                   <TextInput
                     style={styles.input}
-                    value={itemToEdit.price.toString()}
+                    value={itemToEdit.price}
                     onChangeText={(text) =>
                       setItemToEdit({
                         ...itemToEdit,
-                        price: parseFloat(text) || 0,
+                        price: text.replace(/[^0-9.]/g, ""),
                       })
                     }
-                    keyboardType="numeric"
+                    keyboardType="decimal-pad"
                   />
                 </View>
 
@@ -323,7 +326,7 @@ const styles = StyleSheet.create({
     color: "black",
   },
   name: {
-    maxWidth: 240, // Set your desired max width here
+    maxWidth: 240,
     flexWrap: "wrap",
     fontSize: 16,
     color: "black",
@@ -344,14 +347,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "700",
-  },
-  outlineButton: {
-    borderWidth: 1,
-    borderColor: "darkgrey",
-    marginRight: 16,
-  },
-  outlineButtonText: {
-    color: "black",
   },
   confirmButton: {
     backgroundColor: "#04AA6D",
