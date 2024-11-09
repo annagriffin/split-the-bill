@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Item, ReceiptData } from "@/types/receiptTypes";
+import { Item, ReceiptData } from "@/types/Types";
 
 // Define context types
 interface ReceiptContextType {

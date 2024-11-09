@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useReceipt } from "@/context/ReceiptContext";
+import { usePeople } from "@/context/PeopleContext";
 
 const people = [
   { id: 1, name: "Alice", initial: "A" },
@@ -14,6 +15,7 @@ const people = [
 
 export default function SplitItemsScreen() {
   const { receiptData } = useReceipt();
+  const { people } = usePeople();
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [assignments, setAssignments] = useState({});
 
@@ -41,6 +43,10 @@ export default function SplitItemsScreen() {
     setCurrentItemIndex(
       (prev) => (prev - 1 + receiptData.items.length) % receiptData.items.length
     );
+  };
+
+  const handleConfirm = () => {
+    console.log(people);
   };
 
   return (
@@ -88,7 +94,7 @@ export default function SplitItemsScreen() {
               ]}
             >
               <ThemedText style={styles.personInitialText}>
-                {person.initial}
+                {person.initials}
               </ThemedText>
             </ThemedView>
           </TouchableOpacity>
@@ -99,7 +105,7 @@ export default function SplitItemsScreen() {
         <ThemedText style={styles.footerText}>
           Item {currentItemIndex + 1} of {receiptData.items.length}
         </ThemedText>
-        <TouchableOpacity style={styles.confirmButton}>
+        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
           <ThemedText style={styles.confirmButtonText}>
             Confirm Split
           </ThemedText>

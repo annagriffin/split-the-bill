@@ -8,7 +8,7 @@ import {
   TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Item } from "@/types/receiptTypes";
+import { Item } from "@/types/Types";
 import { useState, useRef } from "react";
 import { useReceipt } from "@/context/ReceiptContext";
 import { Edit } from "react-native-feather";

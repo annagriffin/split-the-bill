@@ -18,3 +18,9 @@ export interface CalculatedTotals {
     totalAfterTax: number;
     grandTotal: number;
 }
+
+export interface Person {
+    id: string;
+    name: string;
+    initials: string;
+}

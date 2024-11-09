@@ -1,27 +1,16 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-} from "react-native";
+import React from "react";
+import { View, TouchableOpacity, FlatList, StyleSheet } from "react-native";
 import { User, UserPlus, XCircle } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useRouter } from "expo-router";
-
-interface Person {
-  id: string;
-  name: string;
-  initials: string;
-}
+import { usePeople } from "@/context/PeopleContext"; // Importing usePeople from PeopleContext
 
 export default function PeopleComponent() {
-  const [people, setPeople] = useState<Person[]>([]);
+  const { people, addPerson, removePerson } = usePeople(); // Access people, addPerson, and removePerson from PeopleContext
   const router = useRouter();
 
-  const addPerson = () => {
+  const handleAddPerson = () => {
     const names = ["Sophie", "Megan", "Beth", "Alex", "Jamie", "Sam"];
     const randomName = names[Math.floor(Math.random() * names.length)];
     const newPerson = {
@@ -29,11 +18,7 @@ export default function PeopleComponent() {
       name: randomName,
       initials: randomName.charAt(0),
     };
-    setPeople([...people, newPerson]);
-  };
-
-  const removePerson = (id: string) => {
-    setPeople((prevPeople) => prevPeople.filter((person) => person.id !== id));
+    addPerson(newPerson); // Add person using the context function
   };
 
   const handleConfirm = () => {
@@ -50,7 +35,7 @@ export default function PeopleComponent() {
           Who spent with you today?
         </ThemedText>
 
-        <TouchableOpacity style={styles.addButton} onPress={addPerson}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddPerson}>
           <UserPlus
             width={20}
             height={20}
@@ -88,14 +73,14 @@ export default function PeopleComponent() {
                 <ThemedText style={styles.personName}>{item.name}</ThemedText>
 
                 <TouchableOpacity
-                  onPress={() => removePerson(item.id)}
+                  onPress={() => removePerson(item.id)} // Remove person using the context function
                   style={styles.deleteIconContainer}
                 >
                   <XCircle width={20} height={20} color="#d1d5db" />
                 </TouchableOpacity>
               </ThemedView>
             )}
-            contentContainerStyle={{ paddingBottom: 80 }} // Padding at the bottom to avoid overlap with button
+            contentContainerStyle={{ paddingBottom: 80 }}
           />
         )}
       </View>
