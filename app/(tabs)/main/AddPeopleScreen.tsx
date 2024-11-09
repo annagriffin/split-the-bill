@@ -6,7 +6,7 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
-import { User, UserPlus } from "react-native-feather";
+import { User, UserPlus, XCircle } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
@@ -30,29 +30,44 @@ export default function PeopleComponent() {
     setPeople([...people, newPerson]);
   };
 
+  const removePerson = (id: string) => {
+    setPeople((prevPeople) => prevPeople.filter((person) => person.id !== id));
+  };
+
+  const isDoneButtonEnabled = people.length >= 2;
+
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title} type="title">
-        Who spent with you today?
-      </ThemedText>
+      {/* Top Section with Title and Add Button */}
+      <View style={styles.topSection}>
+        <ThemedText style={styles.title} type="title">
+          Who spent with you today?
+        </ThemedText>
 
-      <TouchableOpacity style={styles.addButton} onPress={addPerson}>
-        <UserPlus width={20} height={20} color="#6b7280" style={styles.icon} />
-        <ThemedText style={styles.addButtonText}>Add person</ThemedText>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.addButton} onPress={addPerson}>
+          <UserPlus
+            width={20}
+            height={20}
+            color="#6b7280"
+            style={styles.icon}
+          />
+          <ThemedText style={styles.addButtonText}>Add person</ThemedText>
+        </TouchableOpacity>
+      </View>
 
-      <ThemedView style={styles.peopleContainer}>
+      {/* Scrollable List Section */}
+      <View style={styles.listSection}>
         <ThemedText style={styles.subTitle}>Split bill between:</ThemedText>
 
         {people.length === 0 ? (
-          <ThemedView style={styles.emptyState}>
+          <TouchableOpacity style={styles.emptyState} onPress={addPerson}>
             <ThemedView style={styles.emptyIconContainer}>
               <User width={24} height={24} color="#6b7280" />
             </ThemedView>
             <ThemedText style={styles.emptyText}>
               Add people to split the bill with
             </ThemedText>
-          </ThemedView>
+          </TouchableOpacity>
         ) : (
           <FlatList
             data={people}
@@ -65,19 +80,34 @@ export default function PeopleComponent() {
                   </ThemedText>
                 </ThemedView>
                 <ThemedText style={styles.personName}>{item.name}</ThemedText>
+
+                <TouchableOpacity
+                  onPress={() => removePerson(item.id)}
+                  style={styles.deleteIconContainer}
+                >
+                  <XCircle width={20} height={20} color="#d1d5db" />
+                </TouchableOpacity>
               </ThemedView>
             )}
+            contentContainerStyle={{ paddingBottom: 80 }} // Padding at the bottom to avoid overlap with button
           />
         )}
-      </ThemedView>
+      </View>
 
-      {people.length > 0 && (
-        <TouchableOpacity style={styles.doneButton}>
+      {/* Bottom Done Button */}
+      <View style={styles.doneButtonContainer}>
+        <TouchableOpacity
+          style={[
+            styles.doneButton,
+            !isDoneButtonEnabled && styles.disabledDoneButton,
+          ]}
+          disabled={!isDoneButtonEnabled}
+        >
           <ThemedText style={styles.doneButtonText}>
             Done adding people
           </ThemedText>
         </TouchableOpacity>
-      )}
+      </View>
     </ThemedView>
   );
 }
@@ -86,12 +116,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    justifyContent: "center",
-    padding: 16,
+    paddingTop: 48,
+    paddingHorizontal: 16,
   },
-  titleContainer: {
-    alignItems: "center",
-    backgroundColor: "white",
+  topSection: {
     marginBottom: 16,
   },
   title: {
@@ -116,9 +144,8 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     fontSize: 16,
   },
-  peopleContainer: {
-    marginTop: 16,
-    backgroundColor: "white",
+  listSection: {
+    flex: 1,
   },
   subTitle: {
     fontSize: 14,
@@ -133,6 +160,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d1d5db",
     borderStyle: "dashed",
+    backgroundColor: "white",
   },
   emptyIconContainer: {
     backgroundColor: "#f3f4f6",
@@ -170,16 +198,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     color: "black",
+    flex: 1,
+  },
+  deleteIconContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  doneButtonContainer: {
+    backgroundColor: "white",
+    paddingTop: 16, // Space between the list and the button
+    paddingHorizontal: 16,
   },
   doneButton: {
-    position: "absolute",
-    bottom: 20,
-    left: 16,
-    right: 16,
     padding: 16,
     backgroundColor: "#04AA6D",
     borderRadius: 8,
     alignItems: "center",
+  },
+  disabledDoneButton: {
+    backgroundColor: "#a1a1a1",
   },
   doneButtonText: {
     color: "white",
