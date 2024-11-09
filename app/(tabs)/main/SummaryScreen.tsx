@@ -15,17 +15,34 @@ import { useColorScheme } from "react-native";
 import { Edit } from "react-native-feather"; // Import the Edit icon
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useReceipt } from "@/context/ReceiptContext";
 
 export default function SummaryScreen() {
   const router = useRouter();
+  const inputRef = useRef<TextInput>(null);
 
   const { receiptData, setReceiptData } = useReceipt();
 
   const colorScheme = "light"; // Override to always use light mode
 
   const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const openModal = (item) => {
+    setModalVisible(true);
+    setItemToEdit(item);
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus(); // Programmatically focus input after opening modal
+      }
+    }, 100);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setItemToEdit(null);
+  };
 
   if (!receiptData) {
     return (
@@ -48,7 +65,11 @@ export default function SummaryScreen() {
     if (itemToEdit) {
       const updatedItems: Item[] = receiptData.items.map((item) =>
         item.id === itemToEdit.id
-          ? { ...item, name: itemToEdit.name, price: itemToEdit.price }
+          ? {
+              ...item,
+              name: itemToEdit.name,
+              price: parseFloat(itemToEdit.price.toFixed(2)),
+            }
           : item
       );
 
@@ -86,7 +107,7 @@ export default function SummaryScreen() {
                 </ThemedText>
                 <ThemedView style={styles.flex}>
                   <ThemedText style={styles.item}>${item.price}</ThemedText>
-                  <TouchableOpacity onPress={() => setItemToEdit(item)}>
+                  <TouchableOpacity onPress={() => openModal(item)}>
                     <Edit width={20} height={20} color="black" />
                   </TouchableOpacity>
                 </ThemedView>
@@ -165,6 +186,7 @@ export default function SummaryScreen() {
                     onChangeText={(text) =>
                       setItemToEdit({ ...itemToEdit, name: text })
                     }
+                    ref={inputRef}
                   />
                 </View>
                 <View style={styles.inputRow}>
@@ -184,7 +206,7 @@ export default function SummaryScreen() {
 
                 <View style={styles.modalActions}>
                   <TouchableOpacity
-                    onPress={() => setItemToEdit(null)}
+                    onPress={closeModal}
                     style={styles.cancelButton}
                   >
                     <Text style={styles.cancelText}>Cancel</Text>
