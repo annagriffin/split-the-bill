@@ -31,13 +31,15 @@ export default function SplitItemsScreen() {
   };
 
   const nextItem = () => {
-    setCurrentItemIndex((prev) => (prev + 1) % receiptData.items.length);
+    if (currentItemIndex < receiptData.items.length - 1) {
+      setCurrentItemIndex((prev) => prev + 1);
+    }
   };
 
   const prevItem = () => {
-    setCurrentItemIndex(
-      (prev) => (prev - 1 + receiptData.items.length) % receiptData.items.length
-    );
+    if (currentItemIndex > 0) {
+      setCurrentItemIndex((prev) => prev - 1);
+    }
   };
 
   const handleConfirm = () => {
@@ -47,17 +49,48 @@ export default function SplitItemsScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.itemContainer}>
-        <TouchableOpacity onPress={prevItem} style={styles.navButton}>
-          <ChevronLeft width={24} height={24} color="#666" />
+        {/* Disable the left button if at the start of the list */}
+        <TouchableOpacity
+          onPress={prevItem}
+          style={[
+            styles.navButton,
+            currentItemIndex === 0 && styles.disabledButton,
+          ]}
+          disabled={currentItemIndex === 0}
+        >
+          <ChevronLeft
+            width={24}
+            height={24}
+            color={currentItemIndex === 0 ? "#ccc" : "#666"}
+          />
         </TouchableOpacity>
+
         <ThemedView style={styles.itemDetails}>
           <ThemedText style={styles.itemName}>{currentItem.name}</ThemedText>
           <ThemedText style={styles.itemPrice}>
             ${currentItem.price.toFixed(2)}
           </ThemedText>
         </ThemedView>
-        <TouchableOpacity onPress={nextItem} style={styles.navButton}>
-          <ChevronRight width={24} height={24} color="#666" />
+
+        {/* Disable the right button if at the end of the list */}
+        <TouchableOpacity
+          onPress={nextItem}
+          style={[
+            styles.navButton,
+            currentItemIndex === receiptData.items.length - 1 &&
+              styles.disabledButton,
+          ]}
+          disabled={currentItemIndex === receiptData.items.length - 1}
+        >
+          <ChevronRight
+            width={24}
+            height={24}
+            color={
+              currentItemIndex === receiptData.items.length - 1
+                ? "#ccc"
+                : "#666"
+            }
+          />
         </TouchableOpacity>
       </ThemedView>
 
@@ -128,6 +161,7 @@ const styles = StyleSheet.create({
   itemName: { fontSize: 24, fontWeight: "700", color: "black" },
   itemPrice: { fontSize: 20, color: "#666" },
   navButton: { padding: 8, backgroundColor: "#e0e0e0", borderRadius: 20 },
+  disabledButton: { backgroundColor: "#f0f0f0" },
   peopleContainer: { padding: 16 },
   personButton: {
     flexDirection: "row",

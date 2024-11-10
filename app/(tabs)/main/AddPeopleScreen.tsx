@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
   },
   topSection: {
     marginBottom: 16,
+    backgroundColor: "white",
   },
   title: {
     fontSize: 20,
