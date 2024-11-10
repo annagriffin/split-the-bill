@@ -12,6 +12,10 @@ export default function MainStack() {
         name="SplitItemsScreen"
         options={{ title: "Split Items" }}
       />
+      <Stack.Screen
+        name="PeopleSummaryScreen"
+        options={{ title: "People Summary" }}
+      />
     </Stack>
   );
 }

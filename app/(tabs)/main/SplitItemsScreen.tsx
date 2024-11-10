@@ -1,21 +1,16 @@
 import React, { useState } from "react";
-import { View, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { ChevronLeft, ChevronRight } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useReceipt } from "@/context/ReceiptContext";
 import { usePeople } from "@/context/PeopleContext";
-
-const people = [
-  { id: 1, name: "Alice", initial: "A" },
-  { id: 2, name: "Bob", initial: "B" },
-  { id: 3, name: "Charlie", initial: "C" },
-  { id: 4, name: "David", initial: "D" },
-];
+import { useRouter } from "expo-router";
 
 export default function SplitItemsScreen() {
   const { receiptData } = useReceipt();
   const { people } = usePeople();
+  const router = useRouter();
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [assignments, setAssignments] = useState({});
 
@@ -46,7 +41,7 @@ export default function SplitItemsScreen() {
   };
 
   const handleConfirm = () => {
-    console.log(people);
+    router.push("/main/PeopleSummaryScreen");
   };
 
   return (
