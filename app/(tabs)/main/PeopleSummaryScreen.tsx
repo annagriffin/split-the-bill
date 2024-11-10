@@ -1,9 +1,14 @@
-import React, { useState } from "react";
-import { View, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
-import { ChevronLeft, ChevronRight, User, Users } from "react-native-feather";
+import React from "react";
+import {
+  View,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useRouter } from "expo-router";
+import { User, Users } from "react-native-feather";
 
 const people = [
   {
@@ -39,19 +44,6 @@ const people = [
 ];
 
 export default function PeopleSummaryScreen() {
-  const [currentPersonIndex, setCurrentPersonIndex] = useState(0);
-  const currentPerson = people[currentPersonIndex];
-
-  const router = useRouter();
-
-  const nextPerson = () => {
-    setCurrentPersonIndex((prev) => (prev + 1) % people.length);
-  };
-
-  const prevPerson = () => {
-    setCurrentPersonIndex((prev) => (prev - 1 + people.length) % people.length);
-  };
-
   const calculateTotal = (items) => {
     return items
       .reduce((sum, item) => sum + item.price / item.splitCount, 0)
@@ -59,69 +51,63 @@ export default function PeopleSummaryScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText style={styles.title}>Bill Summary</ThemedText>
+    <View style={styles.container}>
+      {/* Header */}
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText style={styles.title} type="title">
+          Personal Subtotals
+        </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.navContainer}>
-        <TouchableOpacity onPress={prevPerson} style={styles.navButton}>
-          <ChevronLeft width={24} height={24} color="#666" />
-        </TouchableOpacity>
-        <ThemedView style={styles.personContainer}>
-          <ThemedView style={styles.avatar}>
-            <User width={36} height={36} color="white" />
-          </ThemedView>
-          <ThemedText style={styles.personName}>
-            {currentPerson.name}
-          </ThemedText>
-        </ThemedView>
-        <TouchableOpacity onPress={nextPerson} style={styles.navButton}>
-          <ChevronRight width={24} height={24} color="#666" />
-        </TouchableOpacity>
-      </ThemedView>
-
-      <ScrollView style={styles.itemsContainer}>
-        {currentPerson.items.map((item, index) => (
-          <ThemedView key={index} style={styles.itemCard}>
-            <View style={styles.itemRow}>
-              <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-              <ThemedText style={styles.itemPrice}>
-                ${(item.price / item.splitCount).toFixed(2)}
-              </ThemedText>
-            </View>
-            {item.splitCount > 1 && (
-              <View style={styles.splitInfo}>
-                <Users width={16} height={16} color="#1e90ff" />
-                <ThemedText style={styles.splitText}>
-                  1 out of {item.splitCount}
-                </ThemedText>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {people.map((person) => (
+          <View key={person.id} style={styles.personCard}>
+            <View style={styles.personHeader}>
+              <View style={styles.avatar}>
+                <User width={24} height={24} color="white" />
               </View>
-            )}
-          </ThemedView>
+              <Text style={styles.personName}>{person.name}</Text>
+            </View>
+
+            <View style={styles.itemsContainer}>
+              {person.items.map((item, index) => (
+                <View key={index} style={styles.itemCard}>
+                  <View style={styles.itemRow}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                    <Text style={styles.itemPrice}>
+                      ${(item.price / item.splitCount).toFixed(2)}
+                    </Text>
+                  </View>
+                  {item.splitCount > 1 && (
+                    <View style={styles.splitInfo}>
+                      <Users width={16} height={16} color="#1e90ff" />
+                      <Text style={styles.splitText}>
+                        1 out of {item.splitCount}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+
+            {/* Total Section */}
+            <View style={styles.totalSection}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalAmount}>
+                ${calculateTotal(person.items)}
+              </Text>
+            </View>
+          </View>
         ))}
       </ScrollView>
 
-      {/* Total Section */}
-      <ThemedView style={styles.totalContainer}>
-        <ThemedText style={styles.totalLabel}>Total</ThemedText>
-        <ThemedText style={styles.totalAmount}>
-          ${calculateTotal(currentPerson.items)}
-        </ThemedText>
-      </ThemedView>
-
-      {/* Footer */}
-      <ThemedView style={styles.footer}>
-        <ThemedText style={styles.footerText}>
-          Person {currentPersonIndex + 1} of {people.length}
-        </ThemedText>
+      {/* Footer Button */}
+      <View style={styles.footer}>
         <TouchableOpacity style={styles.confirmButton}>
-          <ThemedText style={styles.confirmButtonText}>
-            Confirm Summary
-          </ThemedText>
+          <Text style={styles.confirmButtonText}>Confirm Summary</Text>
         </TouchableOpacity>
-      </ThemedView>
-    </ThemedView>
+      </View>
+    </View>
   );
 }
 
@@ -132,57 +118,70 @@ const styles = StyleSheet.create({
     paddingTop: 48,
     paddingHorizontal: 16,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  titleContainer: {
     alignItems: "center",
-    paddingVertical: 16,
     backgroundColor: "white",
-  },
-  navButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: "#e0e0e0",
+    marginBottom: 16,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
     color: "black",
   },
-  personContainer: {
+  header: {
+    flexDirection: "row",
     alignItems: "center",
-    marginVertical: 20,
+    padding: 16,
     backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  headerIcon: {
+    marginRight: 8,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  scrollContainer: {
+    padding: 16,
+  },
+  personCard: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  personHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "#1e90ff",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 8,
+    marginRight: 12,
   },
   personName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "black",
-  },
-  navContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "white",
   },
   itemsContainer: {
-    flex: 1,
-    paddingVertical: 16,
+    marginBottom: 16,
   },
   itemCard: {
     backgroundColor: "#f8f9fa",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   itemRow: {
     flexDirection: "row",
@@ -192,7 +191,6 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: "600",
-    color: "black",
   },
   itemPrice: {
     fontSize: 16,
@@ -208,14 +206,12 @@ const styles = StyleSheet.create({
     color: "#1e90ff",
     marginLeft: 4,
   },
-  totalContainer: {
+  totalSection: {
     borderTopWidth: 1,
     borderTopColor: "#ddd",
-    paddingVertical: 16,
+    paddingTop: 12,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "white",
   },
   totalLabel: {
     fontSize: 18,
@@ -228,15 +224,11 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
     backgroundColor: "white",
-  },
-  footerText: {
-    textAlign: "center",
-    fontSize: 14,
-    marginBottom: 8,
-    color: "#666",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
   },
   confirmButton: {
     backgroundColor: "#1e90ff",

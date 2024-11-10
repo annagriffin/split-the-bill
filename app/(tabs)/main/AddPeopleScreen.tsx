@@ -30,7 +30,7 @@ export default function PeopleComponent() {
   return (
     <ThemedView style={styles.container}>
       {/* Top Section with Title and Add Button */}
-      <View style={styles.topSection}>
+      <ThemedView style={styles.topSection}>
         <ThemedText style={styles.title} type="title">
           Who spent with you today?
         </ThemedText>
@@ -44,7 +44,7 @@ export default function PeopleComponent() {
           />
           <ThemedText style={styles.addButtonText}>Add person</ThemedText>
         </TouchableOpacity>
-      </View>
+      </ThemedView>
 
       {/* Scrollable List Section */}
       <View style={styles.listSection}>
