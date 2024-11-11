@@ -8,7 +8,7 @@ import { usePeople } from "@/context/PeopleContext";
 import { useRouter } from "expo-router";
 
 export default function SplitItemsScreen() {
-  const { receiptData } = useReceipt();
+  const { receiptData, updateReceiptData } = useReceipt();
   const { people } = usePeople();
   const router = useRouter();
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
@@ -43,13 +43,23 @@ export default function SplitItemsScreen() {
   };
 
   const handleConfirm = () => {
+    console.log(assignments)
+    const updatedItems = receiptData.items.map((item) => ({
+      ...item,
+      people: assignments[item.id] || [], // Assign selected people to each item
+    }));
+
+    updateReceiptData({
+      ...receiptData,
+      items: updatedItems,
+    });
+
     router.push("/main/PeopleSummaryScreen");
   };
 
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.itemContainer}>
-        {/* Disable the left button if at the start of the list */}
         <TouchableOpacity
           onPress={prevItem}
           style={[
@@ -72,7 +82,6 @@ export default function SplitItemsScreen() {
           </ThemedText>
         </ThemedView>
 
-        {/* Disable the right button if at the end of the list */}
         <TouchableOpacity
           onPress={nextItem}
           style={[
