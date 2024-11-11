@@ -12,13 +12,6 @@ export interface ReceiptData {
     tipAmount: number;
 }
 
-export interface CalculatedTotals {
-    subtotal: number;
-    tax: number;
-    totalAfterTax: number;
-    grandTotal: number;
-}
-
 export interface Person {
     id: string;
     name: string;

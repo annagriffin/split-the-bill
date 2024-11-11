@@ -78,7 +78,7 @@ export default function SplitItemsScreen() {
           style={[
             styles.navButton,
             currentItemIndex === receiptData.items.length - 1 &&
-              styles.disabledButton,
+            styles.disabledButton,
           ]}
           disabled={currentItemIndex === receiptData.items.length - 1}
         >
@@ -102,14 +102,14 @@ export default function SplitItemsScreen() {
             style={[
               styles.personButton,
               assignments[currentItem.id]?.includes(person.id) &&
-                styles.personButtonSelected,
+              styles.personButtonSelected,
             ]}
           >
             <ThemedText
               style={[
                 styles.personName,
                 assignments[currentItem.id]?.includes(person.id) &&
-                  styles.personNameSelected,
+                styles.personNameSelected,
               ]}
             >
               {person.name}
@@ -118,7 +118,7 @@ export default function SplitItemsScreen() {
               style={[
                 styles.personInitial,
                 assignments[currentItem.id]?.includes(person.id) &&
-                  styles.personInitialSelected,
+                styles.personInitialSelected,
               ]}
             >
               <ThemedText style={styles.personInitialText}>

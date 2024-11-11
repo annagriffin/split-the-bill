@@ -52,7 +52,7 @@ export default function PeopleComponent() {
     const newPerson = {
       id: Math.random().toString(36).substr(2, 9),
       name: capitalizeEachWord(name),
-      initials: name.charAt(0),
+      initials: name.charAt(0).toUpperCase(),
     };
     addPerson(newPerson);
     closeModal(); // Close the modal and reset the input
