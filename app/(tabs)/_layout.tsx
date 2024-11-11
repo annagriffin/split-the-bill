@@ -3,12 +3,10 @@ import React from "react";
 
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { ReceiptProvider } from "@/context/ReceiptContext";
 import { PeopleProvider } from "@/context/PeopleContext";
 
 export default function TabLayout() {
-  // const colorScheme = useColorScheme();
   const colorScheme = "light";
 
   return (

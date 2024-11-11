@@ -1,24 +1,61 @@
-import React from "react";
-import { View, TouchableOpacity, FlatList, StyleSheet } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Modal,
+  TextInput,
+  Keyboard,
+} from "react-native";
 import { User, UserPlus, XCircle } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useRouter } from "expo-router";
-import { usePeople } from "@/context/PeopleContext"; // Importing usePeople from PeopleContext
+import { usePeople } from "@/context/PeopleContext";
 
 export default function PeopleComponent() {
-  const { people, addPerson, removePerson } = usePeople(); // Access people, addPerson, and removePerson from PeopleContext
+  const { people, addPerson, removePerson } = usePeople();
   const router = useRouter();
+  const inputRef = useRef<TextInput>(null);
 
-  const handleAddPerson = () => {
-    const names = ["Sophie", "Megan", "Beth", "Alex", "Jamie", "Sam"];
-    const randomName = names[Math.floor(Math.random() * names.length)];
+  const [modalVisible, setModalVisible] = useState(false);
+  const [name, setName] = useState("");
+
+  // Method to open the modal and set focus on the TextInput
+  const openModal = () => {
+    setModalVisible(true);
+    setTimeout(() => {
+      inputRef.current?.focus(); // Focus the TextInput after modal opens
+    }, 100);
+  };
+
+  // Method to close the modal and reset the name state
+  const closeModal = () => {
+    setModalVisible(false);
+    setName("");
+  };
+
+  const capitalizeEachWord = (text) => {
+    return text
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
+  // Handle saving the new person
+  const handleSave = () => {
+    if (name.trim() === "") {
+      alert("Please enter a name");
+      return;
+    }
     const newPerson = {
       id: Math.random().toString(36).substr(2, 9),
-      name: randomName,
-      initials: randomName.charAt(0),
+      name: capitalizeEachWord(name),
+      initials: name.charAt(0),
     };
-    addPerson(newPerson); // Add person using the context function
+    addPerson(newPerson);
+    closeModal(); // Close the modal and reset the input
   };
 
   const handleConfirm = () => {
@@ -35,13 +72,8 @@ export default function PeopleComponent() {
           Who spent with you today?
         </ThemedText>
 
-        <TouchableOpacity style={styles.addButton} onPress={handleAddPerson}>
-          <UserPlus
-            width={20}
-            height={20}
-            color="#6b7280"
-            style={styles.icon}
-          />
+        <TouchableOpacity style={styles.addButton} onPress={openModal}>
+          <UserPlus width={20} height={20} color="#6b7280" style={styles.icon} />
           <ThemedText style={styles.addButtonText}>Add person</ThemedText>
         </TouchableOpacity>
       </ThemedView>
@@ -73,7 +105,7 @@ export default function PeopleComponent() {
                 <ThemedText style={styles.personName}>{item.name}</ThemedText>
 
                 <TouchableOpacity
-                  onPress={() => removePerson(item.id)} // Remove person using the context function
+                  onPress={() => removePerson(item.id)}
                   style={styles.deleteIconContainer}
                 >
                   <XCircle width={20} height={20} color="#d1d5db" />
@@ -100,6 +132,30 @@ export default function PeopleComponent() {
           </ThemedText>
         </TouchableOpacity>
       </View>
+
+      {/* Modal for adding a person's name */}
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <ThemedText style={styles.modalTitle}>Enter Name</ThemedText>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Name"
+              ref={inputRef} // Attach the ref to TextInput
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity onPress={closeModal} style={styles.cancelButton}>
+                <ThemedText style={styles.cancelText}>Cancel</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
+                <ThemedText style={styles.saveText}>Save</ThemedText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -217,6 +273,60 @@ const styles = StyleSheet.create({
   doneButtonText: {
     color: "white",
     fontSize: 16,
+    fontWeight: "600",
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: "90%",
+    padding: 16,
+    backgroundColor: "white",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+    color: "black",
+  },
+  input: {
+    width: "100%",
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 8,
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  cancelButton: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: "#ccc",
+    width: "40%",
+    alignItems: "center",
+  },
+  cancelText: {
+    color: "#333",
+  },
+  saveButton: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: "#04AA6D",
+    width: "40%",
+    alignItems: "center",
+  },
+  saveText: {
+    color: "white",
     fontWeight: "600",
   },
 });
