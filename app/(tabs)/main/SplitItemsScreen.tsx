@@ -43,7 +43,6 @@ export default function SplitItemsScreen() {
   };
 
   const handleConfirm = () => {
-    console.log(assignments)
     const updatedItems = receiptData.items.map((item) => ({
       ...item,
       people: assignments[item.id] || [], // Assign selected people to each item

@@ -9,44 +9,46 @@ import {
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { User, Users } from "react-native-feather";
-
-const people = [
-  {
-    id: 1,
-    name: "Alice",
-    items: [
-      { name: "Pizza", price: 15.0, splitCount: 2 },
-      { name: "Salad", price: 4.0, splitCount: 2 },
-    ],
-  },
-  {
-    id: 2,
-    name: "Bob",
-    items: [
-      { name: "Pizza", price: 15.0, splitCount: 2 },
-      { name: "Drinks", price: 6.0, splitCount: 2 },
-    ],
-  },
-  {
-    id: 3,
-    name: "Charlie",
-    items: [
-      { name: "Salad", price: 4.0, splitCount: 2 },
-      { name: "Drinks", price: 6.0, splitCount: 2 },
-      { name: "Dessert", price: 7.0, splitCount: 2 },
-    ],
-  },
-  {
-    id: 4,
-    name: "David",
-    items: [{ name: "Dessert", price: 7.0, splitCount: 2 }],
-  },
-];
+import { useReceipt } from "@/context/ReceiptContext";
+import { usePeople } from "@/context/PeopleContext";
 
 export default function PeopleSummaryScreen() {
+  const { receiptData } = useReceipt();
+  const { people } = usePeople();
+
+  console.log("Receipt Data Items:", receiptData.items);
+
+
+  // Transform data: for each person, find the items they're associated with
+  const peopleWithItems = people.map((person) => {
+    const personItems = receiptData.items
+      .filter((item) => {
+
+        // Check if item.people contains the current person's id
+        return item.people?.includes(person.id);
+      })
+      .map((item) => {
+        const splitCount = item.people?.length || 1;
+        const sharePrice = item.price / splitCount;
+        return {
+          name: item.name,
+          price: item.price,
+          splitCount,
+          sharePrice: sharePrice.toFixed(2),
+        };
+      });
+
+    // Return person data with items
+    return { id: person.id, name: person.name, items: personItems };
+  });
+
+
+
+
+  // Calculate the total for each person's items
   const calculateTotal = (items) => {
     return items
-      .reduce((sum, item) => sum + item.price / item.splitCount, 0)
+      .reduce((sum, item) => sum + parseFloat(item.sharePrice), 0)
       .toFixed(2);
   };
 
@@ -60,45 +62,53 @@ export default function PeopleSummaryScreen() {
       </ThemedView>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {people.map((person) => (
-          <View key={person.id} style={styles.personCard}>
-            <View style={styles.personHeader}>
-              <View style={styles.avatar}>
-                <User width={24} height={24} color="white" />
-              </View>
-              <Text style={styles.personName}>{person.name}</Text>
-            </View>
-
-            <View style={styles.itemsContainer}>
-              {person.items.map((item, index) => (
-                <View key={index} style={styles.itemCard}>
-                  <View style={styles.itemRow}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-                    <Text style={styles.itemPrice}>
-                      ${(item.price / item.splitCount).toFixed(2)}
-                    </Text>
-                  </View>
-                  {item.splitCount > 1 && (
-                    <View style={styles.splitInfo}>
-                      <Users width={16} height={16} color="#1e90ff" />
-                      <Text style={styles.splitText}>
-                        1 out of {item.splitCount}
-                      </Text>
-                    </View>
-                  )}
+        {peopleWithItems.length > 0 ? (
+          peopleWithItems.map((person) => (
+            <View key={person.id} style={styles.personCard}>
+              <View style={styles.personHeader}>
+                <View style={styles.avatar}>
+                  <User width={24} height={24} color="white" />
                 </View>
-              ))}
-            </View>
+                <Text style={styles.personName}>{person.name}</Text>
+              </View>
 
-            {/* Total Section */}
-            <View style={styles.totalSection}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalAmount}>
-                ${calculateTotal(person.items)}
-              </Text>
+              <View style={styles.itemsContainer}>
+                {person.items.length > 0 ? (
+                  person.items.map((item, index) => (
+                    <View key={index} style={styles.itemCard}>
+                      <View style={styles.itemRow}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={styles.itemPrice}>
+                          ${item.sharePrice}
+                        </Text>
+                      </View>
+                      {item.splitCount > 1 && (
+                        <View style={styles.splitInfo}>
+                          <Users width={16} height={16} color="#1e90ff" />
+                          <Text style={styles.splitText}>
+                            1 of {item.splitCount}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.noItemsText}>No items assigned</Text>
+                )}
+              </View>
+
+              {/* Total Section */}
+              <View style={styles.totalSection}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.totalAmount}>
+                  ${calculateTotal(person.items)}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))}
+          ))
+        ) : (
+          <Text style={styles.noDataText}>No data available to display</Text>
+        )}
       </ScrollView>
 
       {/* Footer Button */}
@@ -125,23 +135,6 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "black",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "white",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  headerIcon: {
-    marginRight: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
   },
   scrollContainer: {
     padding: 16,
@@ -240,5 +233,17 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  noDataText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#888",
+    marginVertical: 20,
+  },
+  noItemsText: {
+    textAlign: "center",
+    fontSize: 14,
+    color: "#888",
+    marginVertical: 10,
   },
 });

@@ -16,13 +16,8 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
   const dummyReceiptData: ReceiptData = {
     items: [
       { id: "1", name: "French Fries", price: 3.87, people: [] },
-      { id: "28", name: "Hot Dog", price: 3.59, people: [] },
-      { id: "18", name: "French Fries", price: 3.87, people: [] },
-      { id: "29", name: "Hot Dog", price: 3.59, people: [] },
-      { id: "15", name: "French Fries", price: 3.87, people: [] },
-      { id: "24", name: "Hot Dog", price: 3.59, people: [] },
-      { id: "3", name: "Soda", price: 1.56, people: [] },
-      { id: "4", name: "Soda", price: 1.56, people: [] },
+      { id: "2", name: "Hot Dog", price: 3.59, people: [] },
+      { id: "3", name: "Soda", price: 3.87, people: [] },
     ],
     taxAmount: 0.07,
     tipAmount: 1.0,

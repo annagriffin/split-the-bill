@@ -4,7 +4,7 @@ export interface Item {
     id: string;
     name: string;
     price: number;
-    people?: Person[]; // Each item can have a list of associated people
+    people?: string[]; // Each item can have a list of associated people
 }
 
 export interface ReceiptData {
