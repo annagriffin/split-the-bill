@@ -85,7 +85,7 @@ const TaxSummaryScreen = () => {
                         accessor={"value"}
                         backgroundColor={"transparent"}
                         paddingLeft={"15"}
-                        absolute
+                        hasLegend={false}
                     />
                     <View style={styles.legendContainer}>
                         {chartData.map((entry) => (
