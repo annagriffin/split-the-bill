@@ -6,7 +6,7 @@ interface ReceiptContextType {
   receiptData: ReceiptData;
   setReceiptData: (data: ReceiptData) => void;
   updateReceiptData: (updates: Partial<ReceiptData>) => void;
-  updateItemPeople: (itemId: string, people: Person[]) => void; // Change to Person[]
+  updateItemPeople: (itemId: string, people: string[]) => void; // Change to Person[]
 }
 
 // Create the context with initial values
@@ -35,7 +35,7 @@ export const ReceiptProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Function to update the people array of a specific item by item ID
-  const updateItemPeople = (itemId: string, people: Person[]) => { // Change to Person[]
+  const updateItemPeople = (itemId: string, people: string[]) => { // Change to Person[]
     setReceiptData((prevData) => {
       const updatedItems = prevData.items.map((item) =>
         item.id === itemId ? { ...item, people } : item
