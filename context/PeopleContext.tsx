@@ -1,12 +1,21 @@
 // context/PeopleContext.tsx
+
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Person } from "@/types/Types";
+import { Person, ItemBreakdown } from "@/types/types";
 
 // Define context types
 interface PeopleContextType {
   people: Person[];
+  peopleWithItems: PersonWithItems[];
   addPerson: (person: Person) => void;
   removePerson: (id: string) => void;
+  setPeopleWithItems: (items: PersonWithItems[]) => void;
+}
+
+
+
+interface PersonWithItems extends Person {
+  items: ItemBreakdown[];
 }
 
 // Create the context with initial values
@@ -14,6 +23,7 @@ const PeopleContext = createContext<PeopleContextType | undefined>(undefined);
 
 export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   const [people, setPeople] = useState<Person[]>([]);
+  const [peopleWithItems, setPeopleWithItems] = useState<PersonWithItems[]>([]);
 
   const addPerson = (person: Person) => {
     setPeople((prevPeople) => [...prevPeople, person]);
@@ -24,7 +34,9 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <PeopleContext.Provider value={{ people, addPerson, removePerson }}>
+    <PeopleContext.Provider
+      value={{ people, peopleWithItems, addPerson, removePerson, setPeopleWithItems }}
+    >
       {children}
     </PeopleContext.Provider>
   );

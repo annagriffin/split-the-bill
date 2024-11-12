@@ -8,7 +8,7 @@ import {
   TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Item } from "@/types/Types";
+import { Item } from "@/types/types";
 import { useState, useRef } from "react";
 import { useReceipt } from "@/context/ReceiptContext";
 import { Edit } from "react-native-feather";
@@ -71,10 +71,10 @@ export default function SummaryScreen() {
       const updatedItems: Item[] = receiptData.items.map((item) =>
         item.id === itemToEdit.id
           ? {
-              ...item,
-              name: itemToEdit.name,
-              price: roundedPrice,
-            }
+            ...item,
+            name: itemToEdit.name,
+            price: roundedPrice,
+          }
           : item
       );
 

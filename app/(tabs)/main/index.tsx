@@ -1,7 +1,5 @@
 import React from "react";
 import { Stack } from "expo-router";
-import { ReceiptProvider } from "@/context/ReceiptContext";
-import { PeopleProvider } from "@/context/PeopleContext";
 
 export default function MainStack() {
   return (
@@ -15,6 +13,10 @@ export default function MainStack() {
       <Stack.Screen
         name="PeopleSummaryScreen"
         options={{ title: "People Summary" }}
+      />
+      <Stack.Screen
+        name="TaxSummaryScreen"
+        options={{ title: "Tax Summary" }}
       />
     </Stack>
   );

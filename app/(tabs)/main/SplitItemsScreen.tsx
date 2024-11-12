@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { ChevronLeft, ChevronRight } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
@@ -13,6 +13,7 @@ export default function SplitItemsScreen() {
   const router = useRouter();
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [assignments, setAssignments] = useState({});
+  const [isConfirmDisabled, setIsConfirmDisabled] = useState(true);
 
   const currentItem = receiptData.items[currentItemIndex];
 
@@ -55,6 +56,16 @@ export default function SplitItemsScreen() {
 
     router.push("/main/PeopleSummaryScreen");
   };
+
+  // Validation function to check if all items have assigned people
+  const validateAssignments = () => {
+    return receiptData.items.every((item) => (assignments[item.id] || []).length > 0);
+  };
+
+  // Re-evaluate `isConfirmDisabled` whenever `assignments` or `receiptData.items` changes
+  useEffect(() => {
+    setIsConfirmDisabled(!validateAssignments());
+  }, [assignments, receiptData.items]);
 
   return (
     <ThemedView style={styles.container}>
@@ -141,7 +152,11 @@ export default function SplitItemsScreen() {
         <ThemedText style={styles.footerText}>
           Item {currentItemIndex + 1} of {receiptData.items.length}
         </ThemedText>
-        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+        <TouchableOpacity
+          style={[styles.confirmButton, isConfirmDisabled && styles.disabledButton]}
+          onPress={handleConfirm}
+          disabled={isConfirmDisabled}
+        >
           <ThemedText style={styles.confirmButtonText}>
             Confirm Split
           </ThemedText>

@@ -3,6 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitAny": false,
+    "types": [
+      "./types/types"
+    ],
     "paths": {
       "@/*": [
         "./*"

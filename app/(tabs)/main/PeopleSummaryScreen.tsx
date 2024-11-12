@@ -11,10 +11,14 @@ import { ThemedView } from "@/components/ThemedView";
 import { User, Users } from "react-native-feather";
 import { useReceipt } from "@/context/ReceiptContext";
 import { usePeople } from "@/context/PeopleContext";
+import { useRouter } from "expo-router";
+
 
 export default function PeopleSummaryScreen() {
   const { receiptData } = useReceipt();
   const { people } = usePeople();
+  const router = useRouter();
+  const { setPeopleWithItems } = usePeople();
 
   console.log("Receipt Data Items:", receiptData.items);
 
@@ -22,11 +26,7 @@ export default function PeopleSummaryScreen() {
   // Transform data: for each person, find the items they're associated with
   const peopleWithItems = people.map((person) => {
     const personItems = receiptData.items
-      .filter((item) => {
-
-        // Check if item.people contains the current person's id
-        return item.people?.includes(person.id);
-      })
+      .filter((item) => item.people?.includes(person.id))
       .map((item) => {
         const splitCount = item.people?.length || 1;
         const sharePrice = item.price / splitCount;
@@ -38,12 +38,16 @@ export default function PeopleSummaryScreen() {
         };
       });
 
-    // Return person data with items
-    return { id: person.id, name: person.name, items: personItems };
+    // Ensure initials are included by spreading `person` into the object
+    return { ...person, items: personItems };
   });
 
 
 
+  const handleConfirm = () => {
+    setPeopleWithItems(peopleWithItems); // Store in context
+    router.push("/main/TaxSummaryScreen");
+  };
 
   // Calculate the total for each person's items
   const calculateTotal = (items) => {
@@ -113,7 +117,7 @@ export default function PeopleSummaryScreen() {
 
       {/* Footer Button */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.confirmButton}>
+        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
           <Text style={styles.confirmButtonText}>Confirm Summary</Text>
         </TouchableOpacity>
       </View>

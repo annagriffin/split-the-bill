@@ -1,4 +1,4 @@
-// app/types/receiptTypes.ts
+// types/types.d.ts
 
 export interface Item {
     id: string;
@@ -11,11 +11,18 @@ export interface ReceiptData {
     items: Item[];
     taxAmount: number;
     tipAmount: number;
-    people: Person[]; // Add this line to define people at the top level of ReceiptData
+    people: Person[]; // Define people at the top level of ReceiptData
 }
 
 export interface Person {
     id: string;
     name: string;
     initials: string;
+}
+
+export interface ItemBreakdown {
+    name: string;
+    price: number;
+    splitCount: number;
+    sharePrice: string;
 }
