@@ -12,8 +12,6 @@ interface PeopleContextType {
   setPeopleWithItems: (items: PersonWithItems[]) => void;
 }
 
-
-
 interface PersonWithItems extends Person {
   items: ItemBreakdown[];
 }

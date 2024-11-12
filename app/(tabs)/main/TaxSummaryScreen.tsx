@@ -5,8 +5,6 @@ import { ChevronLeft, Edit } from "react-native-feather";
 import { PieChart } from "react-native-chart-kit";
 import { usePeople } from "@/context/PeopleContext";
 
-
-// Define the route type for this screen
 const TaxSummaryScreen = () => {
     const { receiptData } = useReceipt();
     const [editMode, setEditMode] = useState(false);
@@ -16,19 +14,20 @@ const TaxSummaryScreen = () => {
     const totalTax = receiptData.taxAmount;
     const chartColors = ['#4CAF50', '#2196F3', '#FFC107', '#E91E63', '#9C27B0'];
 
-    // Calculate percentages based on peopleWithItems
-    const overallTaxSum = peopleWithItems.reduce(
+    // Calculate each person's share of the tax
+    const overallItemsTotal = peopleWithItems.reduce(
         (sum, person) => sum + person.items.reduce((itemSum, item) => itemSum + parseFloat(item.sharePrice), 0),
         0
     );
 
-    const peopleWithPercentages = peopleWithItems.map((person) => {
-        const personTotalTax = person.items.reduce((sum, item) => sum + parseFloat(item.sharePrice), 0);
-        const percentage = overallTaxSum > 0 ? (personTotalTax / overallTaxSum) * 100 : 0;
-        return { ...person, totalTax: personTotalTax, percentage: percentage.toFixed(2) };
+    const peopleWithTaxShare = peopleWithItems.map((person) => {
+        const personTotal = person.items.reduce((sum, item) => sum + parseFloat(item.sharePrice), 0);
+        const taxShare = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * totalTax : 0;
+        const percentage = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * 100 : 0;
+        return { ...person, taxShare: taxShare.toFixed(2), percentage: percentage.toFixed(2) };
     });
 
-    const chartData = peopleWithPercentages.map((person, index) => ({
+    const chartData = peopleWithTaxShare.map((person, index) => ({
         name: person.name,
         value: parseFloat(person.percentage),
         color: chartColors[index % chartColors.length],
@@ -61,12 +60,12 @@ const TaxSummaryScreen = () => {
                     <View style={styles.table}>
                         <View style={styles.tableRow}>
                             <Text style={styles.tableHead}>Person</Text>
-                            <Text style={[styles.tableHead, styles.tableRight]}>Total Tax</Text>
+                            <Text style={[styles.tableHead, styles.tableRight]}>Tax Share</Text>
                         </View>
-                        {peopleWithPercentages.map((person) => (
+                        {peopleWithTaxShare.map((person) => (
                             <View key={person.name} style={styles.tableRow}>
                                 <Text style={styles.tableCell}>{person.name}</Text>
-                                <Text style={[styles.tableCell, styles.tableRight]}>${person.totalTax.toFixed(2)}</Text>
+                                <Text style={[styles.tableCell, styles.tableRight]}>${person.taxShare}</Text>
                             </View>
                         ))}
                     </View>
