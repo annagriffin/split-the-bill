@@ -18,6 +18,14 @@ export default function MainStack() {
         name="TaxSummaryScreen"
         options={{ title: "Tax Summary" }}
       />
+      <Stack.Screen
+        name="TipSummaryScreen"
+        options={{ title: "Tip Summary" }}
+      />
+      <Stack.Screen
+        name="GrandTotalSummaryScreen"
+        options={{ title: "Grand Total Summary" }}
+      />
     </Stack>
   );
 }

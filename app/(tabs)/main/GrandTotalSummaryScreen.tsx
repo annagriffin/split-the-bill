@@ -5,64 +5,53 @@ import { Edit } from "react-native-feather";
 import { usePeople } from "@/context/PeopleContext";
 import { useRouter } from "expo-router";
 
-
-const TaxSummaryScreen = () => {
+const GrandTotalSummaryScreen = () => {
     const { receiptData } = useReceipt();
     const [editMode, setEditMode] = useState(false);
     const router = useRouter();
 
     const { peopleWithItems } = usePeople(); // Retrieve from context
 
-    const totalTax = receiptData.taxAmount;
+    const totalTip = receiptData.tipAmount; // Assuming you have a tipAmount in your receiptData
+    const totalTax = receiptData.taxAmount; // Assuming you have a taxAmount in your receiptData
 
-    const handleConfirm = () => {
-        router.push("/main/TipSummaryScreen");
-    };
-
-    // Calculate each person's share of the tax
+    // Calculate each person's total
     const overallItemsTotal = peopleWithItems.reduce(
         (sum, person) => sum + person.items.reduce((itemSum, item) => itemSum + parseFloat(item.sharePrice), 0),
         0
     );
 
-    const peopleWithTaxShare = peopleWithItems.map((person) => {
+    const peopleWithGrandTotal = peopleWithItems.map((person) => {
         const personTotal = person.items.reduce((sum, item) => sum + parseFloat(item.sharePrice), 0);
-        const taxShare = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * totalTax : 0;
-        const percentage = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * 100 : 0;
-        return { ...person, taxShare: taxShare.toFixed(2), percentage: percentage.toFixed(2) };
+        const grandTotal = personTotal + (totalTax / peopleWithItems.length) + (totalTip / peopleWithItems.length);
+        return { ...person, personTotal: personTotal.toFixed(2), grandTotal: grandTotal.toFixed(2) };
     });
+
+    const handleConfirm = () => {
+        console.log("done") // Change to the next screen you want to navigate to
+    };
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerText}>Tax Breakdown</Text>
+                <Text style={styles.headerText}>Grand Total Breakdown</Text>
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                {/* Total Tax Card */}
-                <View style={styles.card}>
-                    <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>Total Tax</Text>
-                        <TouchableOpacity onPress={() => setEditMode(!editMode)}>
-                            <Edit width={20} height={20} />
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={styles.totalTax}>${totalTax.toFixed(2)}</Text>
-                </View>
 
-                {/* Tax Distribution Table */}
+                {/* Grand Total Distribution Table */}
                 <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Tax Distribution</Text>
+                    <Text style={styles.cardTitle}>Grand Total Distribution</Text>
                     <View style={styles.table}>
                         <View style={styles.tableRow}>
                             <Text style={styles.tableHead}>Person</Text>
-                            <Text style={[styles.tableHead, styles.tableRight]}>Tax Share</Text>
+                            <Text style={[styles.tableHead, styles.tableRight]}>Total</Text>
                         </View>
-                        {peopleWithTaxShare.map((person) => (
+                        {peopleWithGrandTotal.map((person) => (
                             <View key={person.name} style={styles.tableRow}>
                                 <Text style={styles.tableCell}>{person.name}</Text>
-                                <Text style={[styles.tableCell, styles.tableRight]}>${person.taxShare}</Text>
+                                <Text style={[styles.tableCell, styles.tableRight]}>${person.grandTotal}</Text>
                             </View>
                         ))}
                     </View>
@@ -119,8 +108,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "500",
     },
-    totalTax: {
-        fontSize: 24,
+    total: {
+        fontSize: 18,
         fontWeight: "bold",
     },
     table: {
@@ -161,4 +150,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TaxSummaryScreen;
+export default GrandTotalSummaryScreen;

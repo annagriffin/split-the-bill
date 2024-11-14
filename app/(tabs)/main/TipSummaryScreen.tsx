@@ -5,64 +5,63 @@ import { Edit } from "react-native-feather";
 import { usePeople } from "@/context/PeopleContext";
 import { useRouter } from "expo-router";
 
-
-const TaxSummaryScreen = () => {
+const TipSummaryScreen = () => {
     const { receiptData } = useReceipt();
     const [editMode, setEditMode] = useState(false);
     const router = useRouter();
 
     const { peopleWithItems } = usePeople(); // Retrieve from context
 
-    const totalTax = receiptData.taxAmount;
+    const totalTip = receiptData.tipAmount; // Assuming you have a tipAmount in your receiptData
 
-    const handleConfirm = () => {
-        router.push("/main/TipSummaryScreen");
-    };
-
-    // Calculate each person's share of the tax
+    // Calculate each person's share of the tip
     const overallItemsTotal = peopleWithItems.reduce(
         (sum, person) => sum + person.items.reduce((itemSum, item) => itemSum + parseFloat(item.sharePrice), 0),
         0
     );
 
-    const peopleWithTaxShare = peopleWithItems.map((person) => {
+    const handleConfirm = () => {
+        router.push("/main/GrandTotalSummaryScreen");
+    };
+
+    const peopleWithTipShare = peopleWithItems.map((person) => {
         const personTotal = person.items.reduce((sum, item) => sum + parseFloat(item.sharePrice), 0);
-        const taxShare = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * totalTax : 0;
-        const percentage = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * 100 : 0;
-        return { ...person, taxShare: taxShare.toFixed(2), percentage: percentage.toFixed(2) };
+        const tipShare = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * totalTip : 0;
+        const tipPercentage = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) * 100 : 0;
+        return { ...person, tipShare: tipShare.toFixed(2), tipPercentage: tipPercentage.toFixed(2) };
     });
 
     return (
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerText}>Tax Breakdown</Text>
+                <Text style={styles.headerText}>Tip Breakdown</Text>
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                {/* Total Tax Card */}
+                {/* Total Tip Card */}
                 <View style={styles.card}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>Total Tax</Text>
+                        <Text style={styles.cardTitle}>Total Tip</Text>
                         <TouchableOpacity onPress={() => setEditMode(!editMode)}>
                             <Edit width={20} height={20} />
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.totalTax}>${totalTax.toFixed(2)}</Text>
+                    <Text style={styles.totalTip}>${totalTip.toFixed(2)}</Text>
                 </View>
 
-                {/* Tax Distribution Table */}
+                {/* Tip Distribution Table */}
                 <View style={styles.card}>
-                    <Text style={styles.cardTitle}>Tax Distribution</Text>
+                    <Text style={styles.cardTitle}>Tip Distribution</Text>
                     <View style={styles.table}>
                         <View style={styles.tableRow}>
                             <Text style={styles.tableHead}>Person</Text>
-                            <Text style={[styles.tableHead, styles.tableRight]}>Tax Share</Text>
+                            <Text style={[styles.tableHead, styles.tableRight]}>Tip Share</Text>
                         </View>
-                        {peopleWithTaxShare.map((person) => (
+                        {peopleWithTipShare.map((person) => (
                             <View key={person.name} style={styles.tableRow}>
                                 <Text style={styles.tableCell}>{person.name}</Text>
-                                <Text style={[styles.tableCell, styles.tableRight]}>${person.taxShare}</Text>
+                                <Text style={[styles.tableCell, styles.tableRight]}>{person.tipPercentage}% @ ${person.tipShare}</Text>
                             </View>
                         ))}
                     </View>
@@ -72,7 +71,7 @@ const TaxSummaryScreen = () => {
             {/* Footer */}
             <View style={styles.footer}>
                 <TouchableOpacity onPress={handleConfirm} style={styles.primaryButton}>
-                    <Text style={styles.buttonText}>Next</Text>
+                    <Text style={styles.buttonText}>Looks good!</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -119,7 +118,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "500",
     },
-    totalTax: {
+    totalTip: {
         fontSize: 24,
         fontWeight: "bold",
     },
@@ -161,4 +160,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TaxSummaryScreen;
+export default TipSummaryScreen;
