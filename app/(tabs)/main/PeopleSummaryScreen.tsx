@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -12,116 +12,150 @@ import { User, Users } from "react-native-feather";
 import { useReceipt } from "@/context/ReceiptContext";
 import { usePeople } from "@/context/PeopleContext";
 import { useRouter } from "expo-router";
+import { PersonWithItems } from "@/types/types";
 
 
 export default function PeopleSummaryScreen() {
   const { receiptData } = useReceipt();
   const { people } = usePeople();
   const router = useRouter();
-  const { setPeopleWithItems } = usePeople();
+  const [peopleWithItems, setPeopleWithItems] = useState<PersonWithItems[]>()
 
-  console.log("Receipt Data Items:", receiptData.items);
+  const calculateTotal = (items) => {
+    return items
+      .reduce((sum, item) => sum + parseFloat(item.sharePrice), 0);
+  };
+
+  const overallItemsTotal = peopleWithItems?.reduce(
+    (sum, person) => sum + person.items.reduce((itemSum, item) => itemSum + parseFloat(item.sharePrice), 0),
+    0
+  ) ?? 0;
+
+  const totalTip = receiptData.tipAmount;
+  const totalTax = receiptData.taxAmount;
 
 
-  // Transform data: for each person, find the items they're associated with
-  const peopleWithItems = people.map((person) => {
-    const personItems = receiptData.items
-      .filter((item) => item.people?.includes(person.id))
-      .map((item) => {
-        const splitCount = item.people?.length || 1;
-        const sharePrice = item.price / splitCount;
-        return {
-          name: item.name,
-          price: item.price,
-          splitCount,
-          sharePrice: sharePrice.toFixed(2),
-        };
-      });
 
-    // Ensure initials are included by spreading `person` into the object
-    return { ...person, items: personItems };
-  });
+  useEffect(() => {
+
+    const itemsToPeopleMap = people.map((person) => {
+      const personItems = receiptData.items
+        .filter((item) => item.people?.includes(person.id))
+        .map((item) => {
+          const splitCount = item.people?.length || 1;
+          const sharePrice = item.price / splitCount;
+          return {
+            name: item.name,
+            price: item.price,
+            splitCount,
+            sharePrice: sharePrice.toFixed(2),
+          };
+        });
+
+      const personTotal = calculateTotal(personItems)
+      const portion = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) : 0;
+      const taxShare = overallItemsTotal > 0 ? portion * totalTax : 0;
+      const tipShare = overallItemsTotal > 0 ? portion * totalTip : 0;
+
+      const personGrandTotal = personTotal + taxShare + tipShare;
+
+      return { ...person, items: personItems, subtotal: personTotal.toFixed(2), tipShare: tipShare.toFixed(2), taxShare: taxShare.toFixed(2), percentage: portion * 100, grandTotal: personGrandTotal.toFixed(2) };
+    });
+
+    setPeopleWithItems(itemsToPeopleMap);
+
+  }, []);
 
 
 
   const handleConfirm = () => {
-    setPeopleWithItems(peopleWithItems); // Store in context
-    router.push("/main/TaxSummaryScreen");
+    console.log("confrim")
   };
 
-  // Calculate the total for each person's items
-  const calculateTotal = (items) => {
-    return items
-      .reduce((sum, item) => sum + parseFloat(item.sharePrice), 0)
-      .toFixed(2);
-  };
+
 
   return (
-    <View style={styles.container}>
+    <ThemedView style={styles.container}>
       {/* Header */}
       <ThemedView style={styles.titleContainer}>
         <ThemedText style={styles.title} type="title">
-          Personal Subtotals
+          Receipt Split Summary
         </ThemedText>
       </ThemedView>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {peopleWithItems.length > 0 ? (
-          peopleWithItems.map((person) => (
-            <View key={person.id} style={styles.personCard}>
-              <View style={styles.personHeader}>
-                <View style={styles.avatar}>
+        {peopleWithItems?.length ? (
+          peopleWithItems?.map((person) => (
+            <ThemedView key={person.id} style={styles.personCard}>
+              <ThemedView style={styles.personHeader}>
+                <ThemedView style={styles.avatar}>
                   <User width={24} height={24} color="white" />
-                </View>
-                <Text style={styles.personName}>{person.name}</Text>
-              </View>
+                </ThemedView>
+                <ThemedText style={styles.personName}>{person.name}</ThemedText>
+              </ThemedView>
 
-              <View style={styles.itemsContainer}>
+              <ThemedView style={styles.itemsContainer}>
                 {person.items.length > 0 ? (
                   person.items.map((item, index) => (
-                    <View key={index} style={styles.itemCard}>
-                      <View style={styles.itemRow}>
-                        <Text style={styles.itemName}>{item.name}</Text>
-                        <Text style={styles.itemPrice}>
+                    <ThemedView key={index} style={styles.itemCard}>
+                      <ThemedView style={styles.itemRow}>
+                        <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+                        <ThemedText style={styles.itemPrice}>
                           ${item.sharePrice}
-                        </Text>
-                      </View>
+                        </ThemedText>
+                      </ThemedView>
                       {item.splitCount > 1 && (
-                        <View style={styles.splitInfo}>
+                        <ThemedView style={styles.splitInfo}>
                           <Users width={16} height={16} color="#1e90ff" />
-                          <Text style={styles.splitText}>
+                          <ThemedText style={styles.splitText}>
                             1 of {item.splitCount}
-                          </Text>
-                        </View>
+                          </ThemedText>
+                        </ThemedView>
                       )}
-                    </View>
+                    </ThemedView>
                   ))
                 ) : (
-                  <Text style={styles.noItemsText}>No items assigned</Text>
+                  <ThemedText style={styles.noItemsText}>No items assigned</ThemedText>
                 )}
-              </View>
+              </ThemedView>
+
 
               {/* Total Section */}
-              <View style={styles.totalSection}>
-                <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalAmount}>
-                  ${calculateTotal(person.items)}
-                </Text>
-              </View>
-            </View>
+              <ThemedView style={styles.totalSection}>
+                <ThemedView style={styles.table}>
+                  <ThemedView style={styles.tableRow}>
+                    <ThemedText style={styles.tableCell}>Subtotal</ThemedText>
+                    <ThemedText style={[styles.tableCell, styles.tableRight]}>${person.subtotal}</ThemedText>
+                  </ThemedView>
+                  <ThemedView style={styles.tableRow}>
+                    <ThemedText style={styles.tableCell}>Tax</ThemedText>
+                    <ThemedText style={[styles.tableCell, styles.tableRight]}>${person.taxShare}</ThemedText>
+                  </ThemedView>
+                  <ThemedView style={styles.tableRow}>
+                    <ThemedText style={styles.tableCell}>Tip</ThemedText>
+                    <ThemedText style={[styles.tableCell, styles.tableRight]}>${person.tipShare}</ThemedText>
+                  </ThemedView>
+                  <ThemedView style={[styles.tableRow, styles.lastTableRow]}>
+                    <ThemedText style={[styles.tableCell, styles.totalLabel]}>Grand Total</ThemedText>
+                    <ThemedText style={[styles.tableCell, styles.tableRight, styles.totalAmount]}>${person.grandTotal}</ThemedText>
+                  </ThemedView>
+                </ThemedView>
+
+              </ThemedView>
+            </ThemedView>
           ))
         ) : (
-          <Text style={styles.noDataText}>No data available to display</Text>
+          <ThemedText style={styles.noDataText}>No data available to display</ThemedText>
         )}
       </ScrollView>
 
       {/* Footer Button */}
-      <View style={styles.footer}>
+      <ThemedView style={styles.footer}>
         <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-          <Text style={styles.confirmButtonText}>Confirm Summary</Text>
+          <ThemedText style={styles.confirmButtonText}>Confirm Summary</ThemedText>
         </TouchableOpacity>
-      </View>
-    </View>
+      </ThemedView>
+    </ThemedView>
   );
 }
 
@@ -157,6 +191,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
+    backgroundColor: "white",
   },
   avatar: {
     width: 48,
@@ -170,9 +205,11 @@ const styles = StyleSheet.create({
   personName: {
     fontSize: 20,
     fontWeight: "bold",
+    color: "black",
   },
   itemsContainer: {
     marginBottom: 16,
+    backgroundColor: "white",
   },
   itemCard: {
     backgroundColor: "#f8f9fa",
@@ -184,10 +221,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: "transparent",
   },
   itemName: {
     fontSize: 16,
     fontWeight: "600",
+    color: "black",
   },
   itemPrice: {
     fontSize: 16,
@@ -197,6 +236,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 4,
+    backgroundColor: "transparent"
   },
   splitText: {
     fontSize: 14,
@@ -207,8 +247,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#ddd",
     paddingTop: 12,
-    flexDirection: "row",
     justifyContent: "space-between",
+    backgroundColor: "white",
   },
   totalLabel: {
     fontSize: 18,
@@ -249,5 +289,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#888",
     marginVertical: 10,
+  },
+  table: {
+    marginTop: 8,
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 2,
+    backgroundColor: "white",
+  },
+  lastTableRow: {
+    paddingVertical: 8,
+  },
+  tableHead: {
+    fontWeight: "600",
+  },
+  tableCell: {
+    fontSize: 16,
+    color: "black",
+  },
+  tableRight: {
+    textAlign: "right",
   },
 });

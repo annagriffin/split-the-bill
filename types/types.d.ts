@@ -26,3 +26,13 @@ export interface ItemBreakdown {
     splitCount: number;
     sharePrice: string;
 }
+
+export interface PersonWithItems {
+    id: string;
+    name: string;
+    items: ItemBreakdown[];
+    subtotal: string,
+    taxShare: string,
+    tipShare: string,
+    grandTotal: string,
+}
