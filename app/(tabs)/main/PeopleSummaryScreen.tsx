@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
-  Text,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
@@ -14,65 +13,64 @@ import { usePeople } from "@/context/PeopleContext";
 import { useRouter } from "expo-router";
 import { PersonWithItems } from "@/types/types";
 
-
 export default function PeopleSummaryScreen() {
   const { receiptData } = useReceipt();
   const { people } = usePeople();
   const router = useRouter();
-  const [peopleWithItems, setPeopleWithItems] = useState<PersonWithItems[]>()
+  const [peopleWithItems, setPeopleWithItems] = useState<PersonWithItems[]>();
 
-  const calculateTotal = (items) => {
-    return items
-      .reduce((sum, item) => sum + parseFloat(item.sharePrice), 0);
-  };
+  const calculateTotal = (items) =>
+    items.reduce((sum, item) => sum + parseFloat(item.sharePrice), 0);
 
-  const overallItemsTotal = peopleWithItems?.reduce(
-    (sum, person) => sum + person.items.reduce((itemSum, item) => itemSum + parseFloat(item.sharePrice), 0),
-    0
-  ) ?? 0;
-
-  const totalTip = receiptData.tipAmount;
-  const totalTax = receiptData.taxAmount;
-
-
+  const overallItemsTotal =
+    peopleWithItems?.reduce(
+      (sum, person) =>
+        sum +
+        person.items.reduce(
+          (itemSum, item) => itemSum + parseFloat(item.sharePrice),
+          0
+        ),
+      0
+    ) ?? 0;
 
   useEffect(() => {
-
-    const itemsToPeopleMap = people.map((person) => {
+    const mapPeopleToItems = people.map((person) => {
       const personItems = receiptData.items
         .filter((item) => item.people?.includes(person.id))
         .map((item) => {
           const splitCount = item.people?.length || 1;
-          const sharePrice = item.price / splitCount;
-          return {
-            name: item.name,
-            price: item.price,
-            splitCount,
-            sharePrice: sharePrice.toFixed(2),
-          };
+          const sharePrice = (item.price / splitCount).toFixed(2);
+          return { ...item, sharePrice, splitCount };
         });
 
-      const personTotal = calculateTotal(personItems)
-      const portion = overallItemsTotal > 0 ? (personTotal / overallItemsTotal) : 0;
-      const taxShare = overallItemsTotal > 0 ? portion * totalTax : 0;
-      const tipShare = overallItemsTotal > 0 ? portion * totalTip : 0;
+      const personTotal = calculateTotal(personItems);
+      const portion = overallItemsTotal ? personTotal / overallItemsTotal : 0;
 
-      const personGrandTotal = personTotal + taxShare + tipShare;
+      const taxShare = (portion * receiptData.taxAmount).toFixed(2);
+      const tipShare = (portion * receiptData.tipAmount).toFixed(2);
+      const grandTotal = (
+        personTotal +
+        parseFloat(taxShare) +
+        parseFloat(tipShare)
+      ).toFixed(2);
 
-      return { ...person, items: personItems, subtotal: personTotal.toFixed(2), tipShare: tipShare.toFixed(2), taxShare: taxShare.toFixed(2), percentage: portion * 100, grandTotal: personGrandTotal.toFixed(2) };
+      return {
+        ...person,
+        items: personItems,
+        subtotal: personTotal.toFixed(2),
+        taxShare,
+        tipShare,
+        percentage: (portion * 100).toFixed(2),
+        grandTotal,
+      };
     });
 
-    setPeopleWithItems(itemsToPeopleMap);
-
-  }, []);
-
-
+    setPeopleWithItems(mapPeopleToItems);
+  }, [receiptData, people]);
 
   const handleConfirm = () => {
-    console.log("confrim")
+    console.log("Confirm Summary");
   };
-
-
 
   return (
     <ThemedView style={styles.container}>
@@ -83,10 +81,12 @@ export default function PeopleSummaryScreen() {
         </ThemedText>
       </ThemedView>
 
+      {/* Scrollable Content */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {peopleWithItems?.length ? (
-          peopleWithItems?.map((person) => (
+          peopleWithItems.map((person) => (
             <ThemedView key={person.id} style={styles.personCard}>
+              {/* Person Info */}
               <ThemedView style={styles.personHeader}>
                 <ThemedView style={styles.avatar}>
                   <User width={24} height={24} color="white" />
@@ -94,12 +94,15 @@ export default function PeopleSummaryScreen() {
                 <ThemedText style={styles.personName}>{person.name}</ThemedText>
               </ThemedView>
 
+              {/* Items */}
               <ThemedView style={styles.itemsContainer}>
-                {person.items.length > 0 ? (
+                {person.items.length ? (
                   person.items.map((item, index) => (
                     <ThemedView key={index} style={styles.itemCard}>
                       <ThemedView style={styles.itemRow}>
-                        <ThemedText style={styles.itemName}>{item.name}</ThemedText>
+                        <ThemedText style={styles.itemName}>
+                          {item.name}
+                        </ThemedText>
                         <ThemedText style={styles.itemPrice}>
                           ${item.sharePrice}
                         </ThemedText>
@@ -115,44 +118,61 @@ export default function PeopleSummaryScreen() {
                     </ThemedView>
                   ))
                 ) : (
-                  <ThemedText style={styles.noItemsText}>No items assigned</ThemedText>
+                  <ThemedText style={styles.noItemsText}>
+                    No items assigned
+                  </ThemedText>
                 )}
               </ThemedView>
 
-
-              {/* Total Section */}
+              {/* Totals */}
               <ThemedView style={styles.totalSection}>
                 <ThemedView style={styles.table}>
-                  <ThemedView style={styles.tableRow}>
-                    <ThemedText style={styles.tableCell}>Subtotal</ThemedText>
-                    <ThemedText style={[styles.tableCell, styles.tableRight]}>${person.subtotal}</ThemedText>
-                  </ThemedView>
-                  <ThemedView style={styles.tableRow}>
-                    <ThemedText style={styles.tableCell}>Tax</ThemedText>
-                    <ThemedText style={[styles.tableCell, styles.tableRight]}>${person.taxShare}</ThemedText>
-                  </ThemedView>
-                  <ThemedView style={styles.tableRow}>
-                    <ThemedText style={styles.tableCell}>Tip</ThemedText>
-                    <ThemedText style={[styles.tableCell, styles.tableRight]}>${person.tipShare}</ThemedText>
-                  </ThemedView>
-                  <ThemedView style={[styles.tableRow, styles.lastTableRow]}>
-                    <ThemedText style={[styles.tableCell, styles.totalLabel]}>Grand Total</ThemedText>
-                    <ThemedText style={[styles.tableCell, styles.tableRight, styles.totalAmount]}>${person.grandTotal}</ThemedText>
-                  </ThemedView>
+                  {[
+                    { label: "Subtotal", value: person.subtotal },
+                    { label: "Tax", value: person.taxShare },
+                    { label: "Tip", value: person.tipShare },
+                    { label: "Grand Total", value: person.grandTotal, bold: true },
+                  ].map(({ label, value, bold }, idx) => (
+                    <ThemedView
+                      key={idx}
+                      style={[
+                        styles.tableRow,
+                        idx === 3 && styles.lastTableRow,
+                      ]}
+                    >
+                      <ThemedText
+                        style={[styles.tableCell, bold && styles.totalLabel]}
+                      >
+                        {label}
+                      </ThemedText>
+                      <ThemedText
+                        style={[
+                          styles.tableCell,
+                          styles.tableRight,
+                          bold && styles.totalAmount,
+                        ]}
+                      >
+                        ${value}
+                      </ThemedText>
+                    </ThemedView>
+                  ))}
                 </ThemedView>
-
               </ThemedView>
             </ThemedView>
           ))
         ) : (
-          <ThemedText style={styles.noDataText}>No data available to display</ThemedText>
+          <ThemedText style={styles.noDataText}>
+            No data available to display
+          </ThemedText>
         )}
       </ScrollView>
 
-      {/* Footer Button */}
+      {/* Footer */}
       <ThemedView style={styles.footer}>
         <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
-          <ThemedText style={styles.confirmButtonText}>Confirm Summary</ThemedText>
+          <ThemedText style={styles.confirmButtonText}>
+            Confirm Summary
+          </ThemedText>
         </TouchableOpacity>
       </ThemedView>
     </ThemedView>
