@@ -11,7 +11,7 @@ import { useRouter } from "expo-router";
 import { Item } from "@/types/types";
 import { useState, useRef } from "react";
 import { useReceipt } from "@/context/ReceiptContext";
-import { Edit } from "react-native-feather";
+import { Edit, ChevronLeft } from "react-native-feather";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
@@ -92,13 +92,19 @@ export default function SummaryScreen() {
     <ThemedView style={styles.container}>
       {/* Static Header */}
       <ThemedView style={styles.titleContainer}>
-        <ThemedText style={styles.title} type="title">
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()} // Use router.back() to go back to the previous screen
+        >
+          <ChevronLeft width={24} height={24} color="black" />
+        </TouchableOpacity>
+        <ThemedText style={styles.title}>
           Order Summary
         </ThemedText>
       </ThemedView>
 
       {/* Scrollable Items Section */}
-      <View style={styles.listContainer}>
+      <View style={styles.receiptContainer}>
         <FlatList
           data={receiptData.items}
           keyExtractor={(item) => item.id}
@@ -117,61 +123,59 @@ export default function SummaryScreen() {
               </ThemedView>
             </ThemedView>
           )}
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 1 }}
         />
-      </View>
-
-      {/* Fixed Footer Section */}
-      <ThemedView style={styles.fixedFooter}>
         <ThemedView style={styles.divider} />
 
         <ThemedView style={styles.summary}>
           <ThemedView style={styles.itemContainer}>
             <ThemedText style={styles.summaryText}>Subtotal</ThemedText>
-            <ThemedText style={[styles.summaryText, styles.boldText]}>
+            <ThemedText style={styles.summaryText}>
               ${subtotal.toFixed(2)}
             </ThemedText>
           </ThemedView>
           <ThemedView style={styles.itemContainer}>
             <ThemedText style={styles.summaryText}>Tax</ThemedText>
-            <ThemedText style={[styles.summaryText, styles.boldText]}>
+            <ThemedText style={styles.summaryText}>
               ${receiptData.taxAmount.toFixed(2)}
             </ThemedText>
           </ThemedView>
           <ThemedView style={styles.itemContainer}>
             <ThemedText style={styles.summaryText}>Total after tax</ThemedText>
-            <ThemedText style={[styles.summaryText, styles.boldText]}>
+            <ThemedText style={styles.summaryText}>
               ${(subtotal + receiptData.taxAmount).toFixed(2)}
             </ThemedText>
           </ThemedView>
           <ThemedView style={styles.itemContainer}>
             <ThemedText style={styles.summaryText}>Tip</ThemedText>
-            <ThemedText style={[styles.summaryText, styles.boldText]}>
+            <ThemedText style={styles.summaryText}>
               ${receiptData.tipAmount.toFixed(2)}
             </ThemedText>
           </ThemedView>
+          <ThemedView style={styles.itemContainer}>
+            <ThemedText style={[styles.summaryText, styles.total]}>Total</ThemedText>
+            <ThemedText style={[styles.summaryText, styles.total]}>
+              $
+              {(subtotal + receiptData.taxAmount + receiptData.tipAmount).toFixed(
+                2
+              )}
+            </ThemedText>
+          </ThemedView>
         </ThemedView>
+      </View>
 
-        <ThemedView style={styles.grandTotalContainer}>
-          <ThemedText style={styles.largeText}>
-            Grand Total (tax+tip)
-          </ThemedText>
-          <ThemedText style={styles.largeText}>
-            $
-            {(subtotal + receiptData.taxAmount + receiptData.tipAmount).toFixed(
-              2
-            )}
-          </ThemedText>
-        </ThemedView>
 
-        <ThemedView style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.confirmButton]}
-            onPress={handleConfirm}
-          >
-            <ThemedText style={styles.buttonText}>Confirm</ThemedText>
-          </TouchableOpacity>
-        </ThemedView>
+
+
+      {/* Fixed Footer Section */}
+      <ThemedView style={styles.fixedFooter}>
+        <TouchableOpacity
+          style={[styles.button, styles.confirmButton]}
+          onPress={handleConfirm}
+        >
+          <ThemedText style={styles.buttonText}>Confirm</ThemedText>
+        </TouchableOpacity>
+
       </ThemedView>
 
       {modalVisible && !!itemToEdit && (
@@ -233,19 +237,37 @@ export default function SummaryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-    paddingTop: 48,
+    backgroundColor: "#f8f9fa",
+    paddingTop: 36,
     paddingHorizontal: 16,
   },
   titleContainer: {
-    alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     marginBottom: 16,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
   },
   title: {
     color: "black",
+    fontWeight: "600",
+    fontSize: 20,
   },
   listContainer: {
+    flex: 1
+  },
+  backButton: {
+    marginRight: 8, // Spacing between the button and the title
+  },
+  receiptContainer: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 84,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 2,
     flex: 1,
   },
   topAligned: {
@@ -271,7 +293,7 @@ const styles = StyleSheet.create({
     color: "black",
     backgroundColor: "white",
     paddingHorizontal: 8,
-    paddingVertical: 16,
+    paddingVertical: 10,
   },
   inputRow: {
     flexDirection: "row",
@@ -292,8 +314,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   fixedFooter: {
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     paddingBottom: 20,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
   },
   divider: {
     height: 1,
@@ -306,19 +333,11 @@ const styles = StyleSheet.create({
   summaryText: {
     fontSize: 16,
     color: "black",
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  boldText: {
+  total: {
+    fontSize: 18,
     fontWeight: "700",
-  },
-  grandTotalContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 18,
-    paddingHorizontal: 14,
-    backgroundColor: "gainsboro",
-    borderRadius: 8,
-    marginTop: 28,
   },
   largeText: {
     fontSize: 20,
@@ -335,7 +354,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
     marginTop: 16,
-    backgroundColor: "white",
+    backgroundColor: "transparent",
   },
   button: {
     padding: 10,
@@ -350,6 +369,7 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     backgroundColor: "#04AA6D",
+    width: "100%",
   },
   modalBackground: {
     flex: 1,
